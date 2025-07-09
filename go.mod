@@ -1,4 +1,4 @@
-module github.com/libdns/autodns
+module github.com/saveenergy/libdns-autodns
 
 go 1.24.5
 
