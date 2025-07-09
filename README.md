@@ -108,25 +108,7 @@ example.com {
 }
 ```
 
-### Using with Cert-Manager
 
-```yaml
-apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
-metadata:
-  name: autodns-issuer
-spec:
-  acme:
-    server: https://acme-v02.api.letsencrypt.org/directory
-    email: your-email@example.com
-    privateKeySecretRef:
-      name: autodns-issuer-account-key
-    solvers:
-    - dns01:
-        autodns:
-          username: your-username
-          password: your-password
-```
 
 ## Supported Record Types
 
