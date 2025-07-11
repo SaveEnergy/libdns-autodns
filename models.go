@@ -287,6 +287,11 @@ type JsonResponseDataZone struct {
 	Zone Zone `json:"zone,omitempty"`
 }
 
+// JsonResponseDataZoneArray represents an array of zones response
+type JsonResponseDataZoneArray struct {
+	Zones []Zone `json:"zones,omitempty"`
+}
+
 // JsonResponseDataListJsonResponseDataZone represents a list of zones response
 type JsonResponseDataListJsonResponseDataZone struct {
 	Zones []Zone `json:"zones,omitempty"`

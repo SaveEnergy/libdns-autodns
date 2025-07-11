@@ -32,10 +32,18 @@ func (p *Provider) getZone(ctx context.Context, zoneName string) (Zone, error) {
 		return Zone{}, fmt.Errorf("failed to create request: %v", err)
 	}
 
-	var zone Zone
-	_, err = p.sendAPIRequest(req, &zone)
+	var zoneData JsonResponseDataZoneArray
+	_, err = p.sendAPIRequest(req, &zoneData)
 	if err != nil {
 		return Zone{}, fmt.Errorf("failed to get zone %s: %v", zoneName, err)
+	}
+
+	// Handle array response - take first zone if multiple
+	var zone Zone
+	if len(zoneData.Zones) > 0 {
+		zone = zoneData.Zones[0]
+	} else {
+		return Zone{}, fmt.Errorf("no zones found for %s", zoneName)
 	}
 
 	// Cache the zone
