@@ -8,17 +8,19 @@ This package implements the [libdns interfaces](https://github.com/libdns/libdns
 
 - ✅ **Full libdns interface support** - Get, Append, Set, and Delete records
 - ✅ **AutoDNS API integration** - Uses the official AutoDNS JSON API
-- ✅ **Zone management** - Automatic zone creation and management
+- ✅ **Zone-level operations** - Full zone fetch and update for reliable record management
 - ✅ **Record type support** - A, AAAA, CNAME, MX, NS, SRV, TXT, CAA records
 - ✅ **Authentication** - Basic authentication with username/password
 - ✅ **Context support** - Demo (1) and Live (4) environment support
 - ✅ **Caching** - Zone data caching for improved performance
 - ✅ **Error handling** - Comprehensive error handling and reporting
+- ✅ **Record preservation** - Maintains existing records when adding/modifying specific ones
+- ✅ **Flexible TTL support** - Handles various TTL values with API compatibility
 
 ## Installation
 
 ```bash
-go get github.com/libdns/autodns
+go get github.com/saveenergy/libdns-autodns
 ```
 
 ## Configuration
@@ -47,15 +49,14 @@ export AUTODNS_ENDPOINT=""  # Optional
 ```
 
 **Option 2: Use a .env file**
-1. Copy the example file: `cp env.example .env`
-2. Edit `.env` with your credentials:
+1. Create a `.env` file with your credentials:
 ```bash
 AUTODNS_USERNAME=your-username
 AUTODNS_PASSWORD=your-password
 AUTODNS_CONTEXT=4
 AUTODNS_ZONE=your-domain.com
 ```
-3. Load the variables (if your shell doesn't auto-load .env):
+2. Load the variables (if your shell doesn't auto-load .env):
 ```bash
 source .env
 # or
@@ -72,8 +73,10 @@ package main
 import (
     "context"
     "log"
+    "time"
+    "net/netip"
 
-    "github.com/libdns/autodns"
+    "github.com/saveenergy/libdns-autodns"
     "github.com/libdns/libdns"
 )
 
@@ -81,7 +84,7 @@ func main() {
     provider := &autodns.Provider{
         Username: "your-username",
         Password: "your-password",
-        Context:  "", // Live environment
+        Context:  "4", // Live environment
     }
 
     ctx := context.Background()
@@ -94,11 +97,10 @@ func main() {
     }
 
     // Add a new A record
-    newRecord := libdns.Record{
-        Type:  "A",
-        Name:  "www",
-        Value: "192.168.1.1",
-        TTL:   300 * time.Second,
+    newRecord := libdns.Address{
+        Name: "www",
+        IP:   netip.MustParseAddr("192.168.1.1"),
+        TTL:  300 * time.Second,
     }
 
     addedRecords, err := provider.AppendRecords(ctx, zone, []libdns.Record{newRecord})
@@ -108,6 +110,40 @@ func main() {
 
     log.Printf("Added %d records", len(addedRecords))
 }
+```
+
+### Advanced Example
+
+```go
+// Add a TXT record
+txtRecord := libdns.TXT{
+    Name: "test",
+    Text: "This is a test record",
+    TTL:  300 * time.Second,
+}
+
+// Add a CNAME record
+cnameRecord := libdns.CNAME{
+    Name:   "mail",
+    Target: "mail.example.com",
+    TTL:    300 * time.Second,
+}
+
+// Add multiple records
+records := []libdns.Record{txtRecord, cnameRecord}
+addedRecords, err := provider.AppendRecords(ctx, zone, records)
+
+// Modify an existing record
+modifiedRecord := libdns.TXT{
+    Name: "test",
+    Text: "Updated text value",
+    TTL:  600 * time.Second,
+}
+
+setRecords, err := provider.SetRecords(ctx, zone, []libdns.Record{modifiedRecord})
+
+// Delete specific records
+deletedRecords, err := provider.DeleteRecords(ctx, zone, []libdns.Record{txtRecord})
 ```
 
 ### Using with Caddy
@@ -125,28 +161,25 @@ example.com {
 }
 ```
 
-
-
 ## Supported Record Types
 
 The provider supports the following DNS record types:
 
-- **A** - IPv4 address records
-- **AAAA** - IPv6 address records
-- **CNAME** - Canonical name records
-- **MX** - Mail exchange records
-- **NS** - Name server records
-- **SRV** - Service records
-- **TXT** - Text records
-- **CAA** - Certification Authority Authorization records
+- **A** - IPv4 address records (`libdns.Address`)
+- **AAAA** - IPv6 address records (`libdns.Address`)
+- **CNAME** - Canonical name records (`libdns.CNAME`)
+- **MX** - Mail exchange records (`libdns.MX`)
+- **NS** - Name server records (`libdns.NS`)
+- **SRV** - Service records (`libdns.SRV`)
+- **TXT** - Text records (`libdns.TXT`)
+- **CAA** - Certification Authority Authorization records (`libdns.CAA`)
 
 ## API Endpoints
 
 The provider uses the following AutoDNS API endpoints:
 
 - `GET /zone/{name}` - Get zone information
-- `POST /zone` - Create new zone
-- `PATCH /zone/{name}` - Update zone records
+- `PUT /zone/{name}` - Update zone records (full zone update)
 
 ## Error Handling
 
@@ -156,6 +189,7 @@ The provider includes comprehensive error handling:
 - **API errors** - AutoDNS-specific error messages
 - **Validation errors** - Record type and value validation
 - **Network errors** - Timeout and connection error handling
+- **Zone errors** - Proper handling of zone-level operations
 
 ## Authentication
 
@@ -172,10 +206,11 @@ AutoDNS supports different contexts:
 
 The provider automatically handles zone management:
 
-- **Zone creation** - Automatically creates zones if they don't exist
-- **SOA configuration** - Sets up proper SOA records for new zones
+- **Zone retrieval** - Fetches complete zone data for reliable operations
+- **Record preservation** - Maintains existing records when adding/modifying specific ones
 - **Zone caching** - Caches zone data for improved performance
 - **Cache invalidation** - Automatically refreshes cache on updates
+- **Full zone updates** - Sends complete zone data to ensure consistency
 
 ## Rate Limiting
 
@@ -209,10 +244,7 @@ export AUTODNS_ZONE="your-domain.com"  # Domain you control
 
 **Option B: Use .env file**
 ```bash
-# Copy example file
-cp env.example .env
-
-# Edit .env with your credentials
+# Create .env file with your credentials
 # AUTODNS_USERNAME=your-username
 # AUTODNS_PASSWORD=your-password
 # AUTODNS_CONTEXT=4
@@ -229,13 +261,24 @@ go test -v
 
 **Test coverage:**
 - ✅ GetRecords - Retrieves existing DNS records
-- ✅ AppendRecords - Adds new TXT and A records
-- ✅ SetRecords - Replaces all records in a zone
-- ✅ DeleteRecords - Removes specific records
+- ✅ AppendRecords - Adds new TXT, A, and CNAME records
+- ✅ SetRecords - Modifies existing records (text and TTL)
+- ✅ DeleteRecords - Removes specific records while preserving others
 - ✅ Error handling - Tests with invalid credentials
 - ✅ Default values - Tests provider configuration
 
 **Note:** Tests require a registered AutoDNS account and a domain you control. The tests will create and delete actual DNS records.
+
+## Recent Improvements
+
+### v1.0.0 (Current)
+- ✅ **Fixed SetRecords functionality** - Now properly modifies existing records
+- ✅ **Improved record matching** - Handles both full domain and subdomain names
+- ✅ **Enhanced TTL support** - Compatible with AutoDNS API TTL requirements
+- ✅ **Zone-level operations** - Full zone fetch and update for reliability
+- ✅ **Record preservation** - Maintains existing records when adding/modifying
+- ✅ **Comprehensive testing** - All libdns interfaces tested and working
+- ✅ **Clean error handling** - Proper API error messages and validation
 
 ## License
 
@@ -256,8 +299,9 @@ For issues and questions:
 ## Changelog
 
 ### v1.0.0
-- Initial release
-- Full libdns interface implementation
-- AutoDNS API integration
-- Zone management support
-- Comprehensive error handling
+- Initial release with full libdns interface implementation
+- AutoDNS API integration with zone-level operations
+- Comprehensive record type support (A, AAAA, CNAME, MX, NS, SRV, TXT, CAA)
+- Record preservation and proper SetRecords functionality
+- Enhanced error handling and validation
+- Complete test coverage for all libdns interfaces
