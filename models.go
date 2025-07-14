@@ -11,10 +11,40 @@ import (
 	"github.com/libdns/libdns"
 )
 
+// AutoDNSTime handles AutoDNS time formats like "2023-12-18T15:25:18.000+0100" and RFC3339
+// It implements json.Unmarshaler
+type AutoDNSTime struct {
+	time.Time
+}
+
+func (t *AutoDNSTime) UnmarshalJSON(b []byte) error {
+	s := strings.Trim(string(b), `"`)
+	if s == "" || s == "null" {
+		t.Time = time.Time{}
+		return nil
+	}
+	// Try AutoDNS format first: "2006-01-02T15:04:05.000-0700"
+	formats := []string{
+		"2006-01-02T15:04:05.000-0700",
+		"2006-01-02T15:04:05-0700",
+		"2006-01-02T15:04:05.000Z07:00",
+		"2006-01-02T15:04:05Z07:00",
+		time.RFC3339,
+	}
+	var err error
+	for _, f := range formats {
+		t.Time, err = time.Parse(f, s)
+		if err == nil {
+			return nil
+		}
+	}
+	return fmt.Errorf("AutoDNSTime: could not parse time %q: %v", s, err)
+}
+
 // Zone represents an AutoDNS zone according to the official API schema
 type Zone struct {
-	Created               time.Time        `json:"created,omitempty"`
-	Updated               time.Time        `json:"updated,omitempty"`
+	Created               AutoDNSTime      `json:"created,omitempty"`
+	Updated               AutoDNSTime      `json:"updated,omitempty"`
 	Origin                string           `json:"origin,omitempty"`
 	IDN                   string           `json:"idn,omitempty"`
 	SOA                   *SOA             `json:"soa,omitempty"`
@@ -28,9 +58,9 @@ type Zone struct {
 	DomainSafe            bool             `json:"domainsafe,omitempty"`
 	Source                string           `json:"source,omitempty"`
 	SourceVirtualHostname string           `json:"sourceVirtualHostname,omitempty"`
-	PurgeDate             time.Time        `json:"purgeDate,omitempty"`
+	PurgeDate             AutoDNSTime      `json:"purgeDate,omitempty"`
 	PurgeType             string           `json:"purgeType,omitempty"`
-	Date                  time.Time        `json:"date,omitempty"`
+	Date                  AutoDNSTime      `json:"date,omitempty"`
 	External              bool             `json:"external,omitempty"`
 	InUse                 bool             `json:"inUse,omitempty"`
 	NameServers           []NameServer     `json:"nameServers,omitempty"`
@@ -55,11 +85,11 @@ type SOA struct {
 
 // BasicUser represents a basic user structure
 type BasicUser struct {
-	Context         int32     `json:"context,omitempty"`
-	PasswordChanged time.Time `json:"passwordChanged,omitempty"`
-	PasswordExpires time.Time `json:"passwordExpires,omitempty"`
-	User            string    `json:"user,omitempty"`
-	PasswordExpired bool      `json:"passwordExpired,omitempty"`
+	Context         int32       `json:"context,omitempty"`
+	PasswordChanged AutoDNSTime `json:"passwordChanged,omitempty"`
+	PasswordExpires AutoDNSTime `json:"passwordExpires,omitempty"`
+	User            string      `json:"user,omitempty"`
+	PasswordExpired bool        `json:"passwordExpired,omitempty"`
 }
 
 // NameServer represents a nameserver structure

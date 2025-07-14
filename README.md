@@ -36,13 +36,30 @@ provider := &autodns.Provider{
 
 ### Environment Variables
 
-You can also configure the provider using environment variables:
+You can configure the provider using environment variables:
 
+**Option 1: Export variables directly**
 ```bash
 export AUTODNS_USERNAME="your-username"
 export AUTODNS_PASSWORD="your-password"
-export AUTODNS_CONTEXT=""  # Optional
+export AUTODNS_CONTEXT="4"  # Optional
 export AUTODNS_ENDPOINT=""  # Optional
+```
+
+**Option 2: Use a .env file**
+1. Copy the example file: `cp env.example .env`
+2. Edit `.env` with your credentials:
+```bash
+AUTODNS_USERNAME=your-username
+AUTODNS_PASSWORD=your-password
+AUTODNS_CONTEXT=4
+AUTODNS_ZONE=your-domain.com
+```
+3. Load the variables (if your shell doesn't auto-load .env):
+```bash
+source .env
+# or
+set -a; source .env; set +a
 ```
 
 ## Usage
@@ -178,34 +195,47 @@ go build .
 
 ### Testing
 
-**Note:** Testing is not yet implemented. The provider currently has no test files.
+The provider includes comprehensive integration tests. To run the tests, you need:
 
-To implement testing, you would need:
+1. **Set environment variables** with your AutoDNS credentials:
 
-1. **Create test files** (e.g., `provider_test.go`, `client_test.go`)
-2. **Mock the AutoDNS API** - Since real API calls require credentials
-3. **Test the libdns interfaces** - GetRecords, AppendRecords, SetRecords, DeleteRecords
-
-Example test structure:
-```go
-// provider_test.go
-package autodns
-
-import (
-    "context"
-    "testing"
-    "github.com/libdns/libdns"
-)
-
-func TestProvider_GetRecords(t *testing.T) {
-    // Test implementation would go here
-}
+**Option A: Export directly**
+```bash
+export AUTODNS_USERNAME="your-username"
+export AUTODNS_PASSWORD="your-password"
+export AUTODNS_CONTEXT="4"  # Optional, defaults to "4"
+export AUTODNS_ZONE="your-domain.com"  # Domain you control
 ```
 
-**Future testing considerations:**
-- Requires a registered AutoDNS account
-- Demo endpoint (context "1") only works with valid AutoDNS credentials
-- Need to mock HTTP responses for unit tests
+**Option B: Use .env file**
+```bash
+# Copy example file
+cp env.example .env
+
+# Edit .env with your credentials
+# AUTODNS_USERNAME=your-username
+# AUTODNS_PASSWORD=your-password
+# AUTODNS_CONTEXT=4
+# AUTODNS_ZONE=your-domain.com
+
+# Load variables
+source .env
+```
+
+2. **Run the tests**:
+```bash
+go test -v
+```
+
+**Test coverage:**
+- ✅ GetRecords - Retrieves existing DNS records
+- ✅ AppendRecords - Adds new TXT and A records
+- ✅ SetRecords - Replaces all records in a zone
+- ✅ DeleteRecords - Removes specific records
+- ✅ Error handling - Tests with invalid credentials
+- ✅ Default values - Tests provider configuration
+
+**Note:** Tests require a registered AutoDNS account and a domain you control. The tests will create and delete actual DNS records.
 
 ## License
 
