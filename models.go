@@ -293,6 +293,14 @@ func libdnsRecordToResourceRecord(record libdns.Record, zone string) ResourceRec
 			Type:  recordType,
 			Value: value,
 		}
+	case libdns.RR:
+		// Handle generic RR records (like DNS-01 challenges)
+		rr = ResourceRecord{
+			Name:  libdns.AbsoluteName(r.Name, zone),
+			TTL:   int64(r.TTL / time.Second),
+			Type:  r.Type,
+			Value: r.Data,
+		}
 	default:
 		// For unknown record types, provide better debugging information
 		// This is better than creating "unknown" records

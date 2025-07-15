@@ -269,7 +269,12 @@ go test -v
 
 ## Recent Improvements
 
-### v1.0.4 (Current)
+### v1.0.5 (Current)
+- ✅ **DNS-01 challenge fix** - Added support for libdns.RR generic records used by Caddy for DNS-01 challenges
+- ✅ **Complete record support** - No more "unknown" records in API requests
+- ✅ **Caddy compatibility** - Full support for Caddy's DNS challenge workflow
+
+### v1.0.4
 - ✅ **Timestamp fix** - Completely omit Created and Updated timestamps from API requests using pointer types
 - ✅ **Clean API requests** - No more unnecessary read-only fields in request bodies
 - ✅ **Enhanced debugging** - Better logging to identify unknown record types
@@ -296,6 +301,9 @@ For issues and questions:
 3. Open an issue on this repository
 
 ## Changelog
+
+### v1.0.5
+- Fixed: Added support for `libdns.RR` generic records, resolving DNS-01 challenge issues where Caddy creates generic TXT records that were previously treated as unknown.
 
 ### v1.0.4
 - Fixed: Completely omit timestamp fields (Created and Updated) from API requests by using pointer types and nil values, ensuring clean request bodies without unnecessary read-only fields.
