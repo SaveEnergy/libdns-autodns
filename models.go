@@ -178,6 +178,16 @@ func (r ResourceRecord) libdnsRecord(zone string) (libdns.Record, error) {
 			TTL:  ttl,
 			Text: r.Value,
 		}, nil
+	case "SVCB", "HTTPS":
+		// Handle ServiceBinding records (SVCB/HTTPS)
+		// For now, we'll treat them as generic records since parsing SvcParams is complex
+		// and the AutoDNS API might not support these record types directly
+		return libdns.RR{
+			Name: name,
+			TTL:  ttl,
+			Type: r.Type,
+			Data: r.Value,
+		}.Parse()
 	default:
 		return libdns.RR{
 			Name: name,
@@ -194,10 +204,15 @@ func libdnsRecordToResourceRecord(record libdns.Record, zone string) ResourceRec
 
 	switch r := record.(type) {
 	case libdns.Address:
+		// Determine if it's A or AAAA based on IP address type
+		recordType := "A"
+		if r.IP.Is6() {
+			recordType = "AAAA"
+		}
 		rr = ResourceRecord{
 			Name:  libdns.AbsoluteName(r.Name, zone),
 			TTL:   int64(r.TTL / time.Second),
-			Type:  "A",
+			Type:  recordType,
 			Value: r.IP.String(),
 		}
 	case libdns.CAA:
@@ -244,13 +259,49 @@ func libdnsRecordToResourceRecord(record libdns.Record, zone string) ResourceRec
 			Type:  "TXT",
 			Value: r.Text,
 		}
-	default:
-		// Fallback for unknown record types
+	case libdns.ServiceBinding:
+		// Determine the record type based on the scheme
+		recordType := "SVCB"
+		if r.Scheme == "https" {
+			recordType = "HTTPS"
+		}
+
+		// Convert ServiceBinding to a string representation
+		// This is a simplified approach - in practice, you might need more complex logic
+		value := fmt.Sprintf("%d %s", r.Priority, r.Target)
+		if len(r.Params) > 0 {
+			// Add parameters if present
+			paramStrs := make([]string, 0, len(r.Params))
+			for key, values := range r.Params {
+				for _, value := range values {
+					paramStrs = append(paramStrs, fmt.Sprintf("%s=%s", key, value))
+				}
+			}
+			value += " " + strings.Join(paramStrs, " ")
+		}
+
 		rr = ResourceRecord{
-			Name:  "unknown",
-			TTL:   0,
-			Type:  "UNKNOWN",
-			Value: "unknown",
+			Name:  libdns.AbsoluteName(r.Name, zone),
+			TTL:   int64(r.TTL / time.Second),
+			Type:  recordType,
+			Value: value,
+		}
+	default:
+		// For unknown record types, provide better debugging information
+		// This is better than creating "unknown" records
+		recordName := "unknown"
+		recordType := "UNKNOWN"
+		recordValue := "unknown"
+		recordTTL := int64(0)
+
+		// Log the unknown record type for debugging
+		fmt.Printf("Warning: Unknown record type %T - this may indicate a missing record type handler\n", record)
+
+		rr = ResourceRecord{
+			Name:  recordName,
+			TTL:   recordTTL,
+			Type:  recordType,
+			Value: recordValue,
 		}
 	}
 

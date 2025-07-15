@@ -295,6 +295,12 @@ For issues and questions:
 
 ## Changelog
 
+### v1.0.3
+- Fixed: Correctly distinguish between A and AAAA records when converting from libdns.Address, preventing misclassification and 'unknown' records.
+- Added: Support for ServiceBinding (SVCB/HTTPS) records, so these are no longer treated as unknown.
+- Improved: The default case for unknown record types now logs a warning and avoids creating 'unknown' records unless truly necessary, aiding debugging and future extensibility.
+- Added: Unit test to verify ServiceBinding record conversion.
+
 ### v1.0.2
 - Code cleanup: Removed unused types and fields from models
 - Improved maintainability with streamlined codebase

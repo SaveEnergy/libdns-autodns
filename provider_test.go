@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/netip"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -280,4 +281,38 @@ func TestProvider_DefaultValues(t *testing.T) {
 
 	t.Logf("Default Context: %s", provider.Context)
 	t.Logf("Default Endpoint: %s", provider.Endpoint)
+}
+
+func TestServiceBindingSupport(t *testing.T) {
+	// Test ServiceBinding to ResourceRecord conversion
+	zone := "example.com"
+
+	// Create a ServiceBinding record
+	svcBinding := libdns.ServiceBinding{
+		Name:     "test",
+		TTL:      300 * time.Second,
+		Scheme:   "https",
+		Priority: 1,
+		Target:   "example.net",
+		Params: libdns.SvcParams{
+			"alpn": []string{"h2", "h3"},
+		},
+	}
+
+	// Convert to ResourceRecord
+	rr := libdnsRecordToResourceRecord(svcBinding, zone)
+
+	// Verify the conversion
+	if rr.Type != "HTTPS" {
+		t.Errorf("Expected type HTTPS, got %s", rr.Type)
+	}
+	if rr.Name != "test.example.com" {
+		t.Errorf("Expected name test.example.com, got %s", rr.Name)
+	}
+	if !strings.Contains(rr.Value, "1 example.net") {
+		t.Errorf("Expected value to contain '1 example.net', got %s", rr.Value)
+	}
+	if !strings.Contains(rr.Value, "alpn=h2") {
+		t.Errorf("Expected value to contain 'alpn=h2', got %s", rr.Value)
+	}
 }
