@@ -17,6 +17,13 @@ type AutoDNSTime struct {
 	time.Time
 }
 
+func (t AutoDNSTime) MarshalJSON() ([]byte, error) {
+	if t.Time.IsZero() {
+		return []byte(`null`), nil
+	}
+	return json.Marshal(t.Time)
+}
+
 func (t *AutoDNSTime) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), `"`)
 	if s == "" || s == "null" {
@@ -43,8 +50,8 @@ func (t *AutoDNSTime) UnmarshalJSON(b []byte) error {
 
 // Zone represents an AutoDNS zone according to the official API schema
 type Zone struct {
-	Created           AutoDNSTime      `json:"created,omitempty"`
-	Updated           AutoDNSTime      `json:"updated,omitempty"`
+	Created           *AutoDNSTime     `json:"created,omitempty"`
+	Updated           *AutoDNSTime     `json:"updated,omitempty"`
 	Origin            string           `json:"origin,omitempty"`
 	SOA               *SOA             `json:"soa,omitempty"`
 	NameServers       []NameServer     `json:"nameServers,omitempty"`
@@ -296,6 +303,7 @@ func libdnsRecordToResourceRecord(record libdns.Record, zone string) ResourceRec
 
 		// Log the unknown record type for debugging
 		fmt.Printf("Warning: Unknown record type %T - this may indicate a missing record type handler\n", record)
+		fmt.Printf("Record details: %+v\n", record)
 
 		rr = ResourceRecord{
 			Name:  recordName,

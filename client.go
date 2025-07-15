@@ -64,8 +64,8 @@ func (p *Provider) getZone(ctx context.Context, zoneName string) (Zone, error) {
 func (p *Provider) setZone(ctx context.Context, zoneName string, zoneData Zone) error {
 	reqURL := fmt.Sprintf("%s/zone/%s", p.Endpoint, zoneName)
 
-	// Prepare clean zone data for API
-	cleanZone := Zone{
+	// Create zone data for API with only the fields we need
+	zoneUpdate := Zone{
 		Origin:            zoneData.Origin,
 		SOA:               zoneData.SOA,
 		NameServers:       zoneData.NameServers,
@@ -74,9 +74,10 @@ func (p *Provider) setZone(ctx context.Context, zoneName string, zoneData Zone) 
 		VirtualNameServer: zoneData.VirtualNameServer,
 		Action:            zoneData.Action,
 		ROID:              zoneData.ROID,
+		// Created and Updated are intentionally omitted (nil pointers)
 	}
 
-	jsonData, err := json.Marshal(cleanZone)
+	jsonData, err := json.Marshal(zoneUpdate)
 	if err != nil {
 		return fmt.Errorf("failed to marshal zone data: %v", err)
 	}
@@ -182,6 +183,9 @@ func (p *Provider) addRecords(ctx context.Context, zoneName string, records []li
 	// Convert libdns records to AutoDNS resource records
 	var newRecords []ResourceRecord
 	for _, record := range records {
+		// Debug: Log the record type being processed
+		fmt.Printf("Processing record type: %T\n", record)
+
 		rr := libdnsRecordToResourceRecord(record, zoneName)
 		newRecords = append(newRecords, rr)
 	}
@@ -204,6 +208,9 @@ func (p *Provider) setRecords(ctx context.Context, zoneName string, records []li
 	// Convert new records to AutoDNS format
 	var newRecords []ResourceRecord
 	for _, record := range records {
+		// Debug: Log the record type being processed
+		fmt.Printf("Processing record type: %T\n", record)
+
 		rr := libdnsRecordToResourceRecord(record, zoneName)
 		newRecords = append(newRecords, rr)
 	}

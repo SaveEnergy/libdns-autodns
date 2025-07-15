@@ -269,13 +269,15 @@ go test -v
 
 ## Recent Improvements
 
-### v1.0.2 (Current)
-- ✅ **Code cleanup** - Removed unused types and fields from models
-- ✅ **Improved maintainability** - Streamlined codebase with only necessary components
-- ✅ **Enhanced documentation** - Updated README with cleaner examples and version info
+### v1.0.4 (Current)
+- ✅ **Timestamp fix** - Completely omit Created and Updated timestamps from API requests using pointer types
+- ✅ **Clean API requests** - No more unnecessary read-only fields in request bodies
+- ✅ **Enhanced debugging** - Better logging to identify unknown record types
 
-### v1.0.1
-- ✅ **Go compatibility** - Downgraded to Go 1.24 for better compatibility
+### v1.0.3
+- ✅ **Record type improvements** - Fixed A/AAAA distinction and added ServiceBinding support
+- ✅ **Better error handling** - Improved unknown record type handling with detailed logging
+- ✅ **Code cleanup** - Removed unused types and fields from models
 
 ## License
 
@@ -294,6 +296,9 @@ For issues and questions:
 3. Open an issue on this repository
 
 ## Changelog
+
+### v1.0.4
+- Fixed: Completely omit timestamp fields (Created and Updated) from API requests by using pointer types and nil values, ensuring clean request bodies without unnecessary read-only fields.
 
 ### v1.0.3
 - Fixed: Correctly distinguish between A and AAAA records when converting from libdns.Address, preventing misclassification and 'unknown' records.
