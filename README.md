@@ -56,11 +56,9 @@ AUTODNS_PASSWORD=your-password
 AUTODNS_CONTEXT=4
 AUTODNS_ZONE=your-domain.com
 ```
-2. Load the variables (if your shell doesn't auto-load .env):
+2. Load the variables:
 ```bash
 source .env
-# or
-set -a; source .env; set +a
 ```
 
 ## Usage
@@ -271,14 +269,13 @@ go test -v
 
 ## Recent Improvements
 
-### v1.0.0 (Current)
-- ✅ **Fixed SetRecords functionality** - Now properly modifies existing records
-- ✅ **Improved record matching** - Handles both full domain and subdomain names
-- ✅ **Enhanced TTL support** - Compatible with AutoDNS API TTL requirements
-- ✅ **Zone-level operations** - Full zone fetch and update for reliability
-- ✅ **Record preservation** - Maintains existing records when adding/modifying
-- ✅ **Comprehensive testing** - All libdns interfaces tested and working
-- ✅ **Clean error handling** - Proper API error messages and validation
+### v1.0.2 (Current)
+- ✅ **Code cleanup** - Removed unused types and fields from models
+- ✅ **Improved maintainability** - Streamlined codebase with only necessary components
+- ✅ **Enhanced documentation** - Updated README with cleaner examples and version info
+
+### v1.0.1
+- ✅ **Go compatibility** - Downgraded to Go 1.24 for better compatibility
 
 ## License
 
@@ -297,6 +294,14 @@ For issues and questions:
 3. Open an issue on this repository
 
 ## Changelog
+
+### v1.0.2
+- Code cleanup: Removed unused types and fields from models
+- Improved maintainability with streamlined codebase
+- Enhanced documentation with cleaner examples
+
+### v1.0.1
+- Downgraded to Go 1.24 for better compatibility
 
 ### v1.0.0
 - Initial release with full libdns interface implementation

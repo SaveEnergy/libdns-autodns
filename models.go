@@ -43,35 +43,16 @@ func (t *AutoDNSTime) UnmarshalJSON(b []byte) error {
 
 // Zone represents an AutoDNS zone according to the official API schema
 type Zone struct {
-	Created               AutoDNSTime      `json:"created,omitempty"`
-	Updated               AutoDNSTime      `json:"updated,omitempty"`
-	Origin                string           `json:"origin,omitempty"`
-	IDN                   string           `json:"idn,omitempty"`
-	SOA                   *SOA             `json:"soa,omitempty"`
-	DNSSEC                bool             `json:"dnssec,omitempty"`
-	NameServerGroup       string           `json:"nameServerGroup,omitempty"`
-	AllowTransfer         bool             `json:"allowTransfer,omitempty"`
-	Owner                 *BasicUser       `json:"owner,omitempty"`
-	Updater               *BasicUser       `json:"updater,omitempty"`
-	LogID                 int64            `json:"logId,omitempty"`
-	Comment               string           `json:"comment,omitempty"`
-	DomainSafe            bool             `json:"domainsafe,omitempty"`
-	Source                string           `json:"source,omitempty"`
-	SourceVirtualHostname string           `json:"sourceVirtualHostname,omitempty"`
-	PurgeDate             AutoDNSTime      `json:"purgeDate,omitempty"`
-	PurgeType             string           `json:"purgeType,omitempty"`
-	Date                  AutoDNSTime      `json:"date,omitempty"`
-	External              bool             `json:"external,omitempty"`
-	InUse                 bool             `json:"inUse,omitempty"`
-	NameServers           []NameServer     `json:"nameServers,omitempty"`
-	Main                  *MainIp          `json:"main,omitempty"`
-	WWWInclude            bool             `json:"wwwInclude,omitempty"`
-	VirtualNameServer     string           `json:"virtualNameServer,omitempty"`
-	FreeText              []string         `json:"freeText,omitempty"`
-	Action                string           `json:"action,omitempty"`
-	Grants                []string         `json:"grants,omitempty"`
-	ResourceRecords       []ResourceRecord `json:"resourceRecords,omitempty"`
-	ROID                  int32            `json:"roid,omitempty"`
+	Created           AutoDNSTime      `json:"created,omitempty"`
+	Updated           AutoDNSTime      `json:"updated,omitempty"`
+	Origin            string           `json:"origin,omitempty"`
+	SOA               *SOA             `json:"soa,omitempty"`
+	NameServers       []NameServer     `json:"nameServers,omitempty"`
+	WWWInclude        bool             `json:"wwwInclude,omitempty"`
+	VirtualNameServer string           `json:"virtualNameServer,omitempty"`
+	Action            string           `json:"action,omitempty"`
+	ResourceRecords   []ResourceRecord `json:"resourceRecords,omitempty"`
+	ROID              int32            `json:"roid,omitempty"`
 }
 
 // SOA represents the SOA record structure
@@ -83,26 +64,11 @@ type SOA struct {
 	Email   string `json:"email,omitempty"`
 }
 
-// BasicUser represents a basic user structure
-type BasicUser struct {
-	Context         int32       `json:"context,omitempty"`
-	PasswordChanged AutoDNSTime `json:"passwordChanged,omitempty"`
-	PasswordExpires AutoDNSTime `json:"passwordExpires,omitempty"`
-	User            string      `json:"user,omitempty"`
-	PasswordExpired bool        `json:"passwordExpired,omitempty"`
-}
-
 // NameServer represents a nameserver structure
 type NameServer struct {
 	Name        string   `json:"name,omitempty"`
 	TTL         int64    `json:"ttl,omitempty"`
 	IPAddresses []string `json:"ipAddresses,omitempty"`
-}
-
-// MainIp represents the main IP address structure
-type MainIp struct {
-	Address string `json:"address,omitempty"`
-	TTL     int64  `json:"ttl,omitempty"`
 }
 
 // ResourceRecord represents a DNS resource record
@@ -295,7 +261,6 @@ func libdnsRecordToResourceRecord(record libdns.Record, zone string) ResourceRec
 type JsonResponse struct {
 	Status ResponseStatus  `json:"status,omitempty"`
 	STID   string          `json:"stid,omitempty"`
-	Object ResponseObject  `json:"object,omitempty"`
 	Data   json.RawMessage `json:"data,omitempty"`
 }
 
@@ -304,55 +269,4 @@ type ResponseStatus struct {
 	Code string `json:"code,omitempty"`
 	Text string `json:"text,omitempty"`
 	Type string `json:"type,omitempty"`
-}
-
-// ResponseObject represents an object in the API response
-type ResponseObject struct {
-	Type  string `json:"type,omitempty"`
-	Value string `json:"value,omitempty"`
-}
-
-// JsonResponseDataZone represents a zone response
-type JsonResponseDataZone struct {
-	Zone Zone `json:"zone,omitempty"`
-}
-
-// JsonResponseDataZoneArray represents an array of zones response
-type JsonResponseDataZoneArray struct {
-	Zones []Zone `json:"zones,omitempty"`
-}
-
-// JsonResponseDataListJsonResponseDataZone represents a list of zones response
-type JsonResponseDataListJsonResponseDataZone struct {
-	Zones []Zone `json:"zones,omitempty"`
-}
-
-// ZonePatchRequest represents a zone patch request
-type ZonePatchRequest struct {
-	Zone Zone `json:"zone,omitempty"`
-}
-
-// ZonePostRequest represents a zone creation request
-type ZonePostRequest struct {
-	Zone Zone `json:"zone,omitempty"`
-}
-
-// ZoneDeleteRequest represents a zone deletion request
-type ZoneDeleteRequest struct {
-	Zone Zone `json:"zone,omitempty"`
-}
-
-// BulkZonePostRequest represents a bulk zone creation request
-type BulkZonePostRequest struct {
-	Zones []Zone `json:"zones,omitempty"`
-}
-
-// BulkZonePatchRequest represents a bulk zone update request
-type BulkZonePatchRequest struct {
-	Zones []Zone `json:"zones,omitempty"`
-}
-
-// BulkZoneDeleteRequest represents a bulk zone deletion request
-type BulkZoneDeleteRequest struct {
-	Zones []Zone `json:"zones,omitempty"`
 }

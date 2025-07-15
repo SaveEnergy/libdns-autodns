@@ -22,8 +22,9 @@ type Provider struct {
 	Endpoint string `json:"endpoint,omitempty"`
 
 	// Zones is a cache of the zones in the account.
-	zones      map[string]Zone
-	zonesMutex sync.Mutex
+	zones       map[string]Zone
+	zonesMutex  sync.Mutex
+	initialized bool
 }
 
 // Endpoint URL and default context for the autodns API.
@@ -32,20 +33,37 @@ const (
 	defaultContext  string = "4"
 )
 
-// setDefaults sets default values for optional fields
-func (p *Provider) setDefaults() {
+// ensureInitialized sets default values and validates required fields
+func (p *Provider) ensureInitialized() error {
+	if p.initialized {
+		return nil
+	}
+
+	// Set defaults
 	if p.Endpoint == "" {
 		p.Endpoint = defaultEndpoint
 	}
 	if p.Context == "" {
 		p.Context = defaultContext
 	}
+
+	// Validate required fields
+	if p.Username == "" {
+		return fmt.Errorf("username is required")
+	}
+	if p.Password == "" {
+		return fmt.Errorf("password is required")
+	}
+
+	p.initialized = true
+	return nil
 }
 
 // GetRecords lists all the records in the zone.
 func (p *Provider) GetRecords(ctx context.Context, zone string) ([]libdns.Record, error) {
-	// Set defaults if not provided
-	p.setDefaults()
+	if err := p.ensureInitialized(); err != nil {
+		return nil, err
+	}
 
 	zoneData, err := p.getZone(ctx, zone)
 	if err != nil {
@@ -66,8 +84,9 @@ func (p *Provider) GetRecords(ctx context.Context, zone string) ([]libdns.Record
 
 // AppendRecords adds records to the zone. It returns the records that were added.
 func (p *Provider) AppendRecords(ctx context.Context, zone string, records []libdns.Record) ([]libdns.Record, error) {
-	// Set defaults if not provided
-	p.setDefaults()
+	if err := p.ensureInitialized(); err != nil {
+		return nil, err
+	}
 
 	err := p.addRecords(ctx, zone, records)
 	if err != nil {
@@ -80,8 +99,9 @@ func (p *Provider) AppendRecords(ctx context.Context, zone string, records []lib
 // SetRecords sets the records in the zone, either by updating existing records or creating new ones.
 // It returns the updated records.
 func (p *Provider) SetRecords(ctx context.Context, zone string, records []libdns.Record) ([]libdns.Record, error) {
-	// Set defaults if not provided
-	p.setDefaults()
+	if err := p.ensureInitialized(); err != nil {
+		return nil, err
+	}
 
 	err := p.setRecords(ctx, zone, records)
 	if err != nil {
@@ -93,8 +113,9 @@ func (p *Provider) SetRecords(ctx context.Context, zone string, records []libdns
 
 // DeleteRecords deletes the specified records from the zone. It returns the records that were deleted.
 func (p *Provider) DeleteRecords(ctx context.Context, zone string, records []libdns.Record) ([]libdns.Record, error) {
-	// Set defaults if not provided
-	p.setDefaults()
+	if err := p.ensureInitialized(); err != nil {
+		return nil, err
+	}
 
 	err := p.deleteRecords(ctx, zone, records)
 	if err != nil {

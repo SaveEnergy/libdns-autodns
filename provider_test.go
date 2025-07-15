@@ -266,7 +266,10 @@ func TestProvider_DefaultValues(t *testing.T) {
 	}
 
 	// Test that defaults are set
-	provider.setDefaults()
+	err := provider.ensureInitialized()
+	if err != nil {
+		t.Errorf("ensureInitialized failed: %v", err)
+	}
 
 	if provider.Context == "" {
 		t.Error("Expected Context to be set to default value")

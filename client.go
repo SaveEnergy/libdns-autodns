@@ -14,15 +14,21 @@ import (
 	"github.com/libdns/libdns"
 )
 
+const (
+	userAgent = "libdns-autodns/1.0.2"
+)
+
 // getZone retrieves a zone from the AutoDNS API
 func (p *Provider) getZone(ctx context.Context, zoneName string) (Zone, error) {
 	p.zonesMutex.Lock()
 	defer p.zonesMutex.Unlock()
 
-	// Check cache first
+	// Initialize cache if needed
 	if p.zones == nil {
 		p.zones = make(map[string]Zone)
 	}
+
+	// Check cache first
 	if zone, ok := p.zones[zoneName]; ok {
 		return zone, nil
 	}
@@ -58,7 +64,7 @@ func (p *Provider) getZone(ctx context.Context, zoneName string) (Zone, error) {
 func (p *Provider) setZone(ctx context.Context, zoneName string, zoneData Zone) error {
 	reqURL := fmt.Sprintf("%s/zone/%s", p.Endpoint, zoneName)
 
-	// Clean up the zone data to remove invalid timestamps and unnecessary fields
+	// Prepare clean zone data for API
 	cleanZone := Zone{
 		Origin:            zoneData.Origin,
 		SOA:               zoneData.SOA,
@@ -68,13 +74,9 @@ func (p *Provider) setZone(ctx context.Context, zoneName string, zoneData Zone) 
 		VirtualNameServer: zoneData.VirtualNameServer,
 		Action:            zoneData.Action,
 		ROID:              zoneData.ROID,
-		// Explicitly exclude timestamp fields that might cause issues
-		// Created, Updated, PurgeDate, Date are not included
 	}
 
-	requestBody := cleanZone
-
-	jsonData, err := json.Marshal(requestBody)
+	jsonData, err := json.Marshal(cleanZone)
 	if err != nil {
 		return fmt.Errorf("failed to marshal zone data: %v", err)
 	}
@@ -116,7 +118,7 @@ func (p *Provider) sendAPIRequest(req *http.Request, data any) (JsonResponse, er
 	if req.Header.Get("Content-Type") == "" {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	req.Header.Set("User-Agent", "libdns-autodns/1.0")
+	req.Header.Set("User-Agent", userAgent)
 
 	// Make the request
 	client := &http.Client{
@@ -246,22 +248,17 @@ func (p *Provider) deleteRecords(ctx context.Context, zoneName string, records [
 	}
 
 	// Create a map of records to delete for efficient lookup
-	// We need to be more specific to avoid deleting records with same type/name but different values
 	recordsToDelete := make(map[string]bool)
 	for _, record := range records {
 		rr := libdnsRecordToResourceRecord(record, zoneName)
 		// Use a more specific key that includes part of the value to avoid false matches
 		key := fmt.Sprintf("%s:%s:%s", rr.Type, rr.Name, rr.Value)
 		recordsToDelete[key] = true
-	}
 
-	// Also create a map for records without the full domain name (as they appear in the zone)
-	for _, record := range records {
-		rr := libdnsRecordToResourceRecord(record, zoneName)
-		// Remove the zone name from the record name to match how it appears in the zone
+		// Also use subdomain name (as they appear in the zone)
 		shortName := strings.TrimSuffix(rr.Name, "."+zoneName)
-		key := fmt.Sprintf("%s:%s:%s", rr.Type, shortName, rr.Value)
-		recordsToDelete[key] = true
+		shortKey := fmt.Sprintf("%s:%s:%s", rr.Type, shortName, rr.Value)
+		recordsToDelete[shortKey] = true
 	}
 
 	// Filter out records to delete
