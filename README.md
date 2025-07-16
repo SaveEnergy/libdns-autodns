@@ -171,6 +171,8 @@ The provider supports the following DNS record types:
 - **SRV** - Service records (`libdns.SRV`)
 - **TXT** - Text records (`libdns.TXT`)
 - **CAA** - Certification Authority Authorization records (`libdns.CAA`)
+- **SVCB/HTTPS** - Service Binding records (`libdns.ServiceBinding`)
+- **Generic records** - Support for `libdns.RR` records (used by DNS-01 challenges)
 
 ## API Endpoints
 
@@ -186,6 +188,7 @@ The provider includes comprehensive error handling:
 - **HTTP errors** - Proper handling of 4xx and 5xx status codes
 - **API errors** - AutoDNS-specific error messages
 - **Validation errors** - Record type and value validation
+- **Input validation** - Required field validation (username, password, zone name, records)
 - **Network errors** - Timeout and connection error handling
 - **Zone errors** - Proper handling of zone-level operations
 
@@ -264,25 +267,28 @@ go test -v
 - ✅ DeleteRecords - Removes specific records while preserving others
 - ✅ Error handling - Tests with invalid credentials
 - ✅ Default values - Tests provider configuration
+- ✅ Input validation - Tests for required field validation
+- ✅ ServiceBinding support - Tests for SVCB/HTTPS record conversion
 
 **Note:** Tests require a registered AutoDNS account and a domain you control. The tests will create and delete actual DNS records.
 
 ## Recent Improvements
 
-### v1.0.5 (Current)
+### v1.0.6 (Current)
+- ✅ **Enhanced validation** - Added comprehensive input validation for required fields (username, password, zone name, records)
+- ✅ **ServiceBinding support** - Added full support for SVCB/HTTPS records (`libdns.ServiceBinding`)
+- ✅ **Better error messages** - Improved validation error messages for better debugging
+- ✅ **Comprehensive testing** - Added tests for validation logic and ServiceBinding support
+- ✅ **Code quality** - Improved error handling and input validation throughout the codebase
+- ✅ **Timestamp parsing optimization** - Simplified AutoDNSTime parsing to use the specific AutoDNS format for better performance
+- ✅ **Cleaner code** - Removed unnecessary fallback formats and improved error handling
+- ✅ **Better reliability** - Single format parsing reduces potential parsing errors
+
+### v1.0.5
 - ✅ **DNS-01 challenge fix** - Added support for libdns.RR generic records used by Caddy for DNS-01 challenges
 - ✅ **Complete record support** - No more "unknown" records in API requests
 - ✅ **Caddy compatibility** - Full support for Caddy's DNS challenge workflow
 
-### v1.0.4
-- ✅ **Timestamp fix** - Completely omit Created and Updated timestamps from API requests using pointer types
-- ✅ **Clean API requests** - No more unnecessary read-only fields in request bodies
-- ✅ **Enhanced debugging** - Better logging to identify unknown record types
-
-### v1.0.3
-- ✅ **Record type improvements** - Fixed A/AAAA distinction and added ServiceBinding support
-- ✅ **Better error handling** - Improved unknown record type handling with detailed logging
-- ✅ **Code cleanup** - Removed unused types and fields from models
 
 ## License
 
@@ -302,13 +308,16 @@ For issues and questions:
 
 ## Changelog
 
+### v1.0.6
+- Added: Comprehensive input validation for required fields (username, password, zone name, records) with clear error messages.
+- Added: Full support for ServiceBinding (SVCB/HTTPS) records with proper conversion between libdns.ServiceBinding and AutoDNS format.
+- Added: Unit tests for validation logic and ServiceBinding record conversion.
+- Improved: Error handling and input validation throughout the codebase for better reliability.
+- Optimized: Simplified AutoDNSTime parsing to use the specific AutoDNS format (2023-12-18T15:25:18.000+0100), removing unnecessary fallback formats for better performance and reliability.
+
 ### v1.0.5
 - Fixed: Added support for `libdns.RR` generic records, resolving DNS-01 challenge issues where Caddy creates generic TXT records that were previously treated as unknown.
-
-### v1.0.4
 - Fixed: Completely omit timestamp fields (Created and Updated) from API requests by using pointer types and nil values, ensuring clean request bodies without unnecessary read-only fields.
-
-### v1.0.3
 - Fixed: Correctly distinguish between A and AAAA records when converting from libdns.Address, preventing misclassification and 'unknown' records.
 - Added: Support for ServiceBinding (SVCB/HTTPS) records, so these are no longer treated as unknown.
 - Improved: The default case for unknown record types now logs a warning and avoids creating 'unknown' records unless truly necessary, aiding debugging and future extensibility.

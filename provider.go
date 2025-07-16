@@ -65,6 +65,10 @@ func (p *Provider) GetRecords(ctx context.Context, zone string) ([]libdns.Record
 		return nil, err
 	}
 
+	if zone == "" {
+		return nil, fmt.Errorf("zone name is required")
+	}
+
 	zoneData, err := p.getZone(ctx, zone)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get zone %s: %v", zone, err)
@@ -88,6 +92,14 @@ func (p *Provider) AppendRecords(ctx context.Context, zone string, records []lib
 		return nil, err
 	}
 
+	if zone == "" {
+		return nil, fmt.Errorf("zone name is required")
+	}
+
+	if len(records) == 0 {
+		return nil, fmt.Errorf("at least one record is required")
+	}
+
 	err := p.addRecords(ctx, zone, records)
 	if err != nil {
 		return nil, fmt.Errorf("failed to add records to zone %s: %v", zone, err)
@@ -103,6 +115,14 @@ func (p *Provider) SetRecords(ctx context.Context, zone string, records []libdns
 		return nil, err
 	}
 
+	if zone == "" {
+		return nil, fmt.Errorf("zone name is required")
+	}
+
+	if len(records) == 0 {
+		return nil, fmt.Errorf("at least one record is required")
+	}
+
 	err := p.setRecords(ctx, zone, records)
 	if err != nil {
 		return nil, fmt.Errorf("failed to set records in zone %s: %v", zone, err)
@@ -115,6 +135,14 @@ func (p *Provider) SetRecords(ctx context.Context, zone string, records []libdns
 func (p *Provider) DeleteRecords(ctx context.Context, zone string, records []libdns.Record) ([]libdns.Record, error) {
 	if err := p.ensureInitialized(); err != nil {
 		return nil, err
+	}
+
+	if zone == "" {
+		return nil, fmt.Errorf("zone name is required")
+	}
+
+	if len(records) == 0 {
+		return nil, fmt.Errorf("at least one record is required")
 	}
 
 	err := p.deleteRecords(ctx, zone, records)

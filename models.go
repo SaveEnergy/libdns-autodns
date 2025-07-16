@@ -30,22 +30,17 @@ func (t *AutoDNSTime) UnmarshalJSON(b []byte) error {
 		t.Time = time.Time{}
 		return nil
 	}
-	// Try AutoDNS format first: "2006-01-02T15:04:05.000-0700"
-	formats := []string{
-		"2006-01-02T15:04:05.000-0700",
-		"2006-01-02T15:04:05-0700",
-		"2006-01-02T15:04:05.000Z07:00",
-		"2006-01-02T15:04:05Z07:00",
-		time.RFC3339,
+
+	// AutoDNS uses format: "2023-12-18T15:25:18.000+0100"
+	layout := "2006-01-02T15:04:05.000-0700"
+
+	parsed, err := time.Parse(layout, s)
+	if err != nil {
+		return fmt.Errorf("AutoDNSTime: could not parse time %q: %v", s, err)
 	}
-	var err error
-	for _, f := range formats {
-		t.Time, err = time.Parse(f, s)
-		if err == nil {
-			return nil
-		}
-	}
-	return fmt.Errorf("AutoDNSTime: could not parse time %q: %v", s, err)
+
+	t.Time = parsed
+	return nil
 }
 
 // Zone represents an AutoDNS zone according to the official API schema

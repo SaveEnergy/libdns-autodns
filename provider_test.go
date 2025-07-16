@@ -316,3 +316,92 @@ func TestServiceBindingSupport(t *testing.T) {
 		t.Errorf("Expected value to contain 'alpn=h2', got %s", rr.Value)
 	}
 }
+
+func TestProvider_Validation(t *testing.T) {
+	provider := &Provider{
+		Username: "test",
+		Password: "test",
+		Context:  "4",
+	}
+
+	ctx := context.Background()
+	testRecord := libdns.TXT{
+		Name: "test",
+		Text: "test",
+		TTL:  300 * time.Second,
+	}
+
+	t.Run("EmptyZoneName", func(t *testing.T) {
+		// Test GetRecords with empty zone name
+		_, err := provider.GetRecords(ctx, "")
+		if err == nil {
+			t.Error("Expected error for empty zone name, got nil")
+		} else if !strings.Contains(err.Error(), "zone name is required") {
+			t.Errorf("Expected 'zone name is required' error, got: %v", err)
+		}
+
+		// Test AppendRecords with empty zone name
+		_, err = provider.AppendRecords(ctx, "", []libdns.Record{testRecord})
+		if err == nil {
+			t.Error("Expected error for empty zone name, got nil")
+		} else if !strings.Contains(err.Error(), "zone name is required") {
+			t.Errorf("Expected 'zone name is required' error, got: %v", err)
+		}
+
+		// Test SetRecords with empty zone name
+		_, err = provider.SetRecords(ctx, "", []libdns.Record{testRecord})
+		if err == nil {
+			t.Error("Expected error for empty zone name, got nil")
+		} else if !strings.Contains(err.Error(), "zone name is required") {
+			t.Errorf("Expected 'zone name is required' error, got: %v", err)
+		}
+
+		// Test DeleteRecords with empty zone name
+		_, err = provider.DeleteRecords(ctx, "", []libdns.Record{testRecord})
+		if err == nil {
+			t.Error("Expected error for empty zone name, got nil")
+		} else if !strings.Contains(err.Error(), "zone name is required") {
+			t.Errorf("Expected 'zone name is required' error, got: %v", err)
+		}
+	})
+
+	t.Run("EmptyRecordsArray", func(t *testing.T) {
+		// Test AppendRecords with empty records array
+		_, err := provider.AppendRecords(ctx, "example.com", []libdns.Record{})
+		if err == nil {
+			t.Error("Expected error for empty records array, got nil")
+		} else if !strings.Contains(err.Error(), "at least one record is required") {
+			t.Errorf("Expected 'at least one record is required' error, got: %v", err)
+		}
+
+		// Test SetRecords with empty records array
+		_, err = provider.SetRecords(ctx, "example.com", []libdns.Record{})
+		if err == nil {
+			t.Error("Expected error for empty records array, got nil")
+		} else if !strings.Contains(err.Error(), "at least one record is required") {
+			t.Errorf("Expected 'at least one record is required' error, got: %v", err)
+		}
+
+		// Test DeleteRecords with empty records array
+		_, err = provider.DeleteRecords(ctx, "example.com", []libdns.Record{})
+		if err == nil {
+			t.Error("Expected error for empty records array, got nil")
+		} else if !strings.Contains(err.Error(), "at least one record is required") {
+			t.Errorf("Expected 'at least one record is required' error, got: %v", err)
+		}
+	})
+
+	t.Run("NilRecordsArray", func(t *testing.T) {
+		// Test with nil records array (should panic or error)
+		defer func() {
+			if r := recover(); r != nil {
+				t.Logf("Recovered from panic: %v", r)
+			}
+		}()
+
+		// These should either error or panic, but not crash
+		provider.AppendRecords(ctx, "example.com", nil)
+		provider.SetRecords(ctx, "example.com", nil)
+		provider.DeleteRecords(ctx, "example.com", nil)
+	})
+}

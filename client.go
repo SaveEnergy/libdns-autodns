@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	userAgent = "libdns-autodns/1.0.2"
+	userAgent = "libdns-autodns/1.0.6"
 )
 
 // getZone retrieves a zone from the AutoDNS API
@@ -183,9 +183,6 @@ func (p *Provider) addRecords(ctx context.Context, zoneName string, records []li
 	// Convert libdns records to AutoDNS resource records
 	var newRecords []ResourceRecord
 	for _, record := range records {
-		// Debug: Log the record type being processed
-		fmt.Printf("Processing record type: %T\n", record)
-
 		rr := libdnsRecordToResourceRecord(record, zoneName)
 		newRecords = append(newRecords, rr)
 	}
@@ -208,9 +205,6 @@ func (p *Provider) setRecords(ctx context.Context, zoneName string, records []li
 	// Convert new records to AutoDNS format
 	var newRecords []ResourceRecord
 	for _, record := range records {
-		// Debug: Log the record type being processed
-		fmt.Printf("Processing record type: %T\n", record)
-
 		rr := libdnsRecordToResourceRecord(record, zoneName)
 		newRecords = append(newRecords, rr)
 	}
