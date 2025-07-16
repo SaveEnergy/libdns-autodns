@@ -206,34 +206,33 @@ func libdnsRecordToResourceRecord(record libdns.Record, zone string) ResourceRec
 
 	switch r := record.(type) {
 	case libdns.Address:
-		// Determine if it's A or AAAA based on IP address type
 		recordType := "A"
 		if r.IP.Is6() {
 			recordType = "AAAA"
 		}
 		rr = ResourceRecord{
-			Name:  libdns.AbsoluteName(r.Name, zone),
+			Name:  libdns.RelativeName(r.Name, zone),
 			TTL:   int64(r.TTL / time.Second),
 			Type:  recordType,
 			Value: r.IP.String(),
 		}
 	case libdns.CAA:
 		rr = ResourceRecord{
-			Name:  libdns.AbsoluteName(r.Name, zone),
+			Name:  libdns.RelativeName(r.Name, zone),
 			TTL:   int64(r.TTL / time.Second),
 			Type:  "CAA",
 			Value: fmt.Sprintf("%d %s \"%s\"", r.Flags, r.Tag, r.Value),
 		}
 	case libdns.CNAME:
 		rr = ResourceRecord{
-			Name:  libdns.AbsoluteName(r.Name, zone),
+			Name:  libdns.RelativeName(r.Name, zone),
 			TTL:   int64(r.TTL / time.Second),
 			Type:  "CNAME",
 			Value: r.Target,
 		}
 	case libdns.MX:
 		rr = ResourceRecord{
-			Name:  libdns.AbsoluteName(r.Name, zone),
+			Name:  libdns.RelativeName(r.Name, zone),
 			TTL:   int64(r.TTL / time.Second),
 			Type:  "MX",
 			Value: r.Target,
@@ -241,14 +240,14 @@ func libdnsRecordToResourceRecord(record libdns.Record, zone string) ResourceRec
 		}
 	case libdns.NS:
 		rr = ResourceRecord{
-			Name:  libdns.AbsoluteName(r.Name, zone),
+			Name:  libdns.RelativeName(r.Name, zone),
 			TTL:   int64(r.TTL / time.Second),
 			Type:  "NS",
 			Value: r.Target,
 		}
 	case libdns.SRV:
 		rr = ResourceRecord{
-			Name:  fmt.Sprintf("_%s._%s.%s", r.Service, r.Transport, libdns.AbsoluteName(r.Name, zone)),
+			Name:  fmt.Sprintf("_%s._%s.%s", r.Service, r.Transport, libdns.RelativeName(r.Name, zone)),
 			TTL:   int64(r.TTL / time.Second),
 			Type:  "SRV",
 			Value: fmt.Sprintf("%d %d %s", r.Weight, r.Port, r.Target),
@@ -256,23 +255,18 @@ func libdnsRecordToResourceRecord(record libdns.Record, zone string) ResourceRec
 		}
 	case libdns.TXT:
 		rr = ResourceRecord{
-			Name:  libdns.AbsoluteName(r.Name, zone),
+			Name:  libdns.RelativeName(r.Name, zone),
 			TTL:   int64(r.TTL / time.Second),
 			Type:  "TXT",
 			Value: r.Text,
 		}
 	case libdns.ServiceBinding:
-		// Determine the record type based on the scheme
 		recordType := "SVCB"
 		if r.Scheme == "https" {
 			recordType = "HTTPS"
 		}
-
-		// Convert ServiceBinding to a string representation
-		// This is a simplified approach - in practice, you might need more complex logic
 		value := fmt.Sprintf("%d %s", r.Priority, r.Target)
 		if len(r.Params) > 0 {
-			// Add parameters if present
 			paramStrs := make([]string, 0, len(r.Params))
 			for key, values := range r.Params {
 				for _, value := range values {
@@ -281,46 +275,32 @@ func libdnsRecordToResourceRecord(record libdns.Record, zone string) ResourceRec
 			}
 			value += " " + strings.Join(paramStrs, " ")
 		}
-
 		rr = ResourceRecord{
-			Name:  libdns.AbsoluteName(r.Name, zone),
+			Name:  libdns.RelativeName(r.Name, zone),
 			TTL:   int64(r.TTL / time.Second),
 			Type:  recordType,
 			Value: value,
 		}
 	case libdns.RR:
-		// Handle generic RR records (like DNS-01 challenges)
-		// Check if it's a supported record type and handle accordingly
 		switch r.Type {
 		case "TXT":
-			// For DNS-01 challenges, handle both relative and absolute names
-			name := r.Name
-			if strings.HasSuffix(name, "."+zone) {
-				// If it's already a full FQDN, extract just the subdomain part
-				name = strings.TrimSuffix(name, "."+zone)
-			} else {
-				// Otherwise, use the standard absolute name conversion
-				name = libdns.AbsoluteName(r.Name, zone)
-			}
 			rr = ResourceRecord{
-				Name:  name,
+				Name:  libdns.RelativeName(r.Name, zone),
 				TTL:   int64(r.TTL / time.Second),
 				Type:  "TXT",
 				Value: r.Data,
 			}
 		case "A", "AAAA":
-			// Try to parse as IP address
 			if addr, err := netip.ParseAddr(r.Data); err == nil {
 				rr = ResourceRecord{
-					Name:  libdns.AbsoluteName(r.Name, zone),
+					Name:  libdns.RelativeName(r.Name, zone),
 					TTL:   int64(r.TTL / time.Second),
 					Type:  r.Type,
 					Value: addr.String(),
 				}
 			} else {
-				// Fall back to generic handling
 				rr = ResourceRecord{
-					Name:  libdns.AbsoluteName(r.Name, zone),
+					Name:  libdns.RelativeName(r.Name, zone),
 					TTL:   int64(r.TTL / time.Second),
 					Type:  r.Type,
 					Value: r.Data,
@@ -328,30 +308,26 @@ func libdnsRecordToResourceRecord(record libdns.Record, zone string) ResourceRec
 			}
 		case "CNAME", "MX", "NS", "SRV", "CAA":
 			rr = ResourceRecord{
-				Name:  libdns.AbsoluteName(r.Name, zone),
+				Name:  libdns.RelativeName(r.Name, zone),
 				TTL:   int64(r.TTL / time.Second),
 				Type:  r.Type,
 				Value: r.Data,
 			}
 		default:
-			// For truly unknown record types, log a warning but still create the record
 			fmt.Printf("Warning: Unknown record type %s in libdns.RR - creating generic record\n", r.Type)
 			rr = ResourceRecord{
-				Name:  libdns.AbsoluteName(r.Name, zone),
+				Name:  libdns.RelativeName(r.Name, zone),
 				TTL:   int64(r.TTL / time.Second),
 				Type:  r.Type,
 				Value: r.Data,
 			}
 		}
 	default:
-		// For unknown record types, provide better debugging information
-		// This is better than creating "unknown" records
 		recordName := "unknown"
 		recordType := "UNKNOWN"
 		recordValue := "unknown"
 		recordTTL := int64(0)
 
-		// Log the unknown record type for debugging
 		fmt.Printf("Warning: Unknown record type %T - this may indicate a missing record type handler\n", record)
 		fmt.Printf("Record details: %+v\n", record)
 

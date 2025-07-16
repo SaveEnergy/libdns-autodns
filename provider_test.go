@@ -306,8 +306,8 @@ func TestServiceBindingSupport(t *testing.T) {
 	if rr.Type != "HTTPS" {
 		t.Errorf("Expected type HTTPS, got %s", rr.Type)
 	}
-	if rr.Name != "test.example.com" {
-		t.Errorf("Expected name test.example.com, got %s", rr.Name)
+	if rr.Name != "test" {
+		t.Errorf("Expected name test, got %s", rr.Name)
 	}
 	if !strings.Contains(rr.Value, "1 example.net") {
 		t.Errorf("Expected value to contain '1 example.net', got %s", rr.Value)
@@ -336,8 +336,8 @@ func TestRRRecordSupport(t *testing.T) {
 	if rr.Type != "TXT" {
 		t.Errorf("Expected type TXT, got %s", rr.Type)
 	}
-	if rr.Name != "_acme-challenge.example.com" {
-		t.Errorf("Expected name _acme-challenge.example.com, got %s", rr.Name)
+	if rr.Name != "_acme-challenge" {
+		t.Errorf("Expected name _acme-challenge, got %s", rr.Name)
 	}
 	if rr.Value != "challenge-token-here" {
 		t.Errorf("Expected value 'challenge-token-here', got %s", rr.Value)
@@ -360,8 +360,8 @@ func TestRRRecordSupport(t *testing.T) {
 	if rr.Type != "A" {
 		t.Errorf("Expected type A, got %s", rr.Type)
 	}
-	if rr.Name != "www.example.com" {
-		t.Errorf("Expected name www.example.com, got %s", rr.Name)
+	if rr.Name != "www" {
+		t.Errorf("Expected name www, got %s", rr.Name)
 	}
 	if rr.Value != "192.168.1.1" {
 		t.Errorf("Expected value '192.168.1.1', got %s", rr.Value)
@@ -374,7 +374,7 @@ func TestDNS01ChallengeSupport(t *testing.T) {
 
 	// Test TXT record with full FQDN (like Caddy passes for DNS-01)
 	txtRR := libdns.RR{
-		Name: "_acme-challenge.schuld.example.com",
+		Name: "_acme-challenge.status.example.com",
 		TTL:  60 * time.Second,
 		Type: "TXT",
 		Data: "challenge-token-here",
@@ -387,8 +387,8 @@ func TestDNS01ChallengeSupport(t *testing.T) {
 	if rr.Type != "TXT" {
 		t.Errorf("Expected type TXT, got %s", rr.Type)
 	}
-	if rr.Name != "_acme-challenge.schuld" {
-		t.Errorf("Expected name _acme-challenge.schuld, got %s", rr.Name)
+	if rr.Name != "_acme-challenge.status" {
+		t.Errorf("Expected name _acme-challenge.status, got %s", rr.Name)
 	}
 	if rr.Value != "challenge-token-here" {
 		t.Errorf("Expected value 'challenge-token-here', got %s", rr.Value)

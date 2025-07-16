@@ -275,36 +275,14 @@ go test -v
 
 ## Recent Improvements
 
-### v1.0.8 (Current)
+### v1.0.9 (Current)
+- ✅ **Relative name fix** - Fixed all record types to use `libdns.RelativeName` instead of `libdns.AbsoluteName`, ensuring AutoDNS receives only subdomain names (e.g., `_acme-challenge.schuld` instead of `_acme-challenge.schuld.badenit.me`).
+
+### v1.0.8
 - ✅ **DNS-01 challenge fix** - Fixed handling of full FQDN names in DNS-01 challenges (e.g., `_acme-challenge.config.example.com` now correctly becomes `_acme-challenge.config`).
 - ✅ **RR record handling** - Improved support for `libdns.RR` records: TXT, A, and other supported types are now properly converted, especially for DNS-01 challenges (Caddy/ACME).
 - ✅ **No more 'unknown' records** - The provider no longer creates 'unknown' records for supported types; TXT challenges now work as expected.
 - ✅ **Test coverage** - Added tests for RR record support and DNS-01 challenge scenarios.
-
-### v1.0.7
-- ✅ **Enhanced validation** - Added comprehensive input validation for required fields (username, password, zone name, records)
-- ✅ **ServiceBinding support** - Added full support for SVCB/HTTPS records (`libdns.ServiceBinding`)
-- ✅ **Better error messages** - Improved validation error messages for better debugging
-- ✅ **Comprehensive testing** - Added tests for validation logic and ServiceBinding support
-- ✅ **Code quality** - Improved error handling and input validation throughout the codebase
-- ✅ **Timestamp parsing optimization** - Simplified AutoDNSTime parsing to use the specific AutoDNS format for better performance
-- ✅ **Cleaner code** - Removed unnecessary fallback formats and improved error handling
-- ✅ **Better reliability** - Single format parsing reduces potential parsing errors
-
-### v1.0.6
-- ✅ **Enhanced validation** - Added comprehensive input validation for required fields (username, password, zone name, records)
-- ✅ **ServiceBinding support** - Added full support for SVCB/HTTPS records (`libdns.ServiceBinding`)
-- ✅ **Better error messages** - Improved validation error messages for better debugging
-- ✅ **Comprehensive testing** - Added tests for validation logic and ServiceBinding support
-- ✅ **Code quality** - Improved error handling and input validation throughout the codebase
-- ✅ **Timestamp parsing optimization** - Simplified AutoDNSTime parsing to use the specific AutoDNS format for better performance
-- ✅ **Cleaner code** - Removed unnecessary fallback formats and improved error handling
-- ✅ **Better reliability** - Single format parsing reduces potential parsing errors
-
-### v1.0.5
-- ✅ **DNS-01 challenge fix** - Added support for libdns.RR generic records used by Caddy for DNS-01 challenges
-- ✅ **Complete record support** - No more "unknown" records in API requests
-- ✅ **Caddy compatibility** - Full support for Caddy's DNS challenge workflow
 
 
 ## License
@@ -324,6 +302,9 @@ For issues and questions:
 3. Open an issue on this repository
 
 ## Changelog
+
+### v1.0.9
+- Fixed: All record types now use `libdns.RelativeName` instead of `libdns.AbsoluteName`, ensuring AutoDNS receives only subdomain names (e.g., `_acme-challenge.schuld` instead of `_acme-challenge.schuld.badenit.me`).
 
 ### v1.0.8
 - Fixed: DNS-01 challenge handling for full FQDN names - now correctly extracts subdomain part (e.g., `_acme-challenge.config.example.com` becomes `_acme-challenge.config`).
