@@ -276,7 +276,7 @@ go test -v
 ## Recent Improvements
 
 ### v1.0.9 (Current)
-- ✅ **Relative name fix** - Fixed all record types to use `libdns.RelativeName` instead of `libdns.AbsoluteName`, ensuring AutoDNS receives only subdomain names (e.g., `_acme-challenge.schuld` instead of `_acme-challenge.schuld.badenit.me`).
+- ✅ **Relative name fix** - Fixed all record types to use `libdns.RelativeName` instead of `libdns.AbsoluteName`, ensuring AutoDNS receives only subdomain names (e.g., `_acme-challenge.status` instead of `_acme-challenge.status.example.com`).
 
 ### v1.0.8
 - ✅ **DNS-01 challenge fix** - Fixed handling of full FQDN names in DNS-01 challenges (e.g., `_acme-challenge.config.example.com` now correctly becomes `_acme-challenge.config`).
@@ -304,7 +304,7 @@ For issues and questions:
 ## Changelog
 
 ### v1.0.9
-- Fixed: All record types now use `libdns.RelativeName` instead of `libdns.AbsoluteName`, ensuring AutoDNS receives only subdomain names (e.g., `_acme-challenge.schuld` instead of `_acme-challenge.schuld.badenit.me`).
+- Fixed: All record types now use `libdns.RelativeName` instead of `libdns.AbsoluteName`, ensuring AutoDNS receives only subdomain names (e.g., `_acme-challenge.status` instead of `_acme-challenge.status.example.com`).
 
 ### v1.0.8
 - Fixed: DNS-01 challenge handling for full FQDN names - now correctly extracts subdomain part (e.g., `_acme-challenge.config.example.com` becomes `_acme-challenge.config`).
@@ -313,11 +313,9 @@ For issues and questions:
 - Added: Unit tests for RR record support and DNS-01 challenge scenarios.
 
 ### v1.0.7
-- Added: Comprehensive input validation for required fields (username, password, zone name, records) with clear error messages.
-- Added: Full support for ServiceBinding (SVCB/HTTPS) records with proper conversion between libdns.ServiceBinding and AutoDNS format.
-- Added: Unit tests for validation logic and ServiceBinding record conversion.
-- Improved: Error handling and input validation throughout the codebase for better reliability.
-- Optimized: Simplified AutoDNSTime parsing to use the specific AutoDNS format (2023-12-18T15:25:18.000+0100), removing unnecessary fallback formats for better performance and reliability.
+- Improved: Properly handle libdns.RR records for TXT, A, and other supported types (especially for DNS-01 challenges and Caddy/ACME).
+- Fixed: No more 'unknown' records for supported types; TXT challenges now work as expected.
+- Added: Unit tests for RR record support (TXT and A).
 
 ### v1.0.6
 - Added: Comprehensive input validation for required fields (username, password, zone name, records) with clear error messages.
