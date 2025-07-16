@@ -275,10 +275,21 @@ go test -v
 
 ## Recent Improvements
 
-### v1.0.7 (Current)
+### v1.0.8 (Current)
+- ✅ **DNS-01 challenge fix** - Fixed handling of full FQDN names in DNS-01 challenges (e.g., `_acme-challenge.config.example.com` now correctly becomes `_acme-challenge.config`).
 - ✅ **RR record handling** - Improved support for `libdns.RR` records: TXT, A, and other supported types are now properly converted, especially for DNS-01 challenges (Caddy/ACME).
 - ✅ **No more 'unknown' records** - The provider no longer creates 'unknown' records for supported types; TXT challenges now work as expected.
-- ✅ **Test coverage** - Added tests for RR record support (TXT and A).
+- ✅ **Test coverage** - Added tests for RR record support and DNS-01 challenge scenarios.
+
+### v1.0.7
+- ✅ **Enhanced validation** - Added comprehensive input validation for required fields (username, password, zone name, records)
+- ✅ **ServiceBinding support** - Added full support for SVCB/HTTPS records (`libdns.ServiceBinding`)
+- ✅ **Better error messages** - Improved validation error messages for better debugging
+- ✅ **Comprehensive testing** - Added tests for validation logic and ServiceBinding support
+- ✅ **Code quality** - Improved error handling and input validation throughout the codebase
+- ✅ **Timestamp parsing optimization** - Simplified AutoDNSTime parsing to use the specific AutoDNS format for better performance
+- ✅ **Cleaner code** - Removed unnecessary fallback formats and improved error handling
+- ✅ **Better reliability** - Single format parsing reduces potential parsing errors
 
 ### v1.0.6
 - ✅ **Enhanced validation** - Added comprehensive input validation for required fields (username, password, zone name, records)
@@ -314,10 +325,18 @@ For issues and questions:
 
 ## Changelog
 
-### v1.0.7
+### v1.0.8
+- Fixed: DNS-01 challenge handling for full FQDN names - now correctly extracts subdomain part (e.g., `_acme-challenge.config.example.com` becomes `_acme-challenge.config`).
 - Improved: Properly handle `libdns.RR` records for TXT, A, and other supported types (especially for DNS-01 challenges and Caddy/ACME).
 - Fixed: No more 'unknown' records for supported types; TXT challenges now work as expected.
-- Added: Unit tests for RR record support (TXT and A).
+- Added: Unit tests for RR record support and DNS-01 challenge scenarios.
+
+### v1.0.7
+- Added: Comprehensive input validation for required fields (username, password, zone name, records) with clear error messages.
+- Added: Full support for ServiceBinding (SVCB/HTTPS) records with proper conversion between libdns.ServiceBinding and AutoDNS format.
+- Added: Unit tests for validation logic and ServiceBinding record conversion.
+- Improved: Error handling and input validation throughout the codebase for better reliability.
+- Optimized: Simplified AutoDNSTime parsing to use the specific AutoDNS format (2023-12-18T15:25:18.000+0100), removing unnecessary fallback formats for better performance and reliability.
 
 ### v1.0.6
 - Added: Comprehensive input validation for required fields (username, password, zone name, records) with clear error messages.

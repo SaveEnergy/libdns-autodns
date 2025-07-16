@@ -293,8 +293,17 @@ func libdnsRecordToResourceRecord(record libdns.Record, zone string) ResourceRec
 		// Check if it's a supported record type and handle accordingly
 		switch r.Type {
 		case "TXT":
+			// For DNS-01 challenges, handle both relative and absolute names
+			name := r.Name
+			if strings.HasSuffix(name, "."+zone) {
+				// If it's already a full FQDN, extract just the subdomain part
+				name = strings.TrimSuffix(name, "."+zone)
+			} else {
+				// Otherwise, use the standard absolute name conversion
+				name = libdns.AbsoluteName(r.Name, zone)
+			}
 			rr = ResourceRecord{
-				Name:  libdns.AbsoluteName(r.Name, zone),
+				Name:  name,
 				TTL:   int64(r.TTL / time.Second),
 				Type:  "TXT",
 				Value: r.Data,

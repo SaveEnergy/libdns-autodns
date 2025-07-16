@@ -368,6 +368,54 @@ func TestRRRecordSupport(t *testing.T) {
 	}
 }
 
+func TestDNS01ChallengeSupport(t *testing.T) {
+	// Test DNS-01 challenge with full FQDN (as Caddy might pass)
+	zone := "example.com"
+
+	// Test TXT record with full FQDN (like Caddy passes for DNS-01)
+	txtRR := libdns.RR{
+		Name: "_acme-challenge.schuld.example.com",
+		TTL:  60 * time.Second,
+		Type: "TXT",
+		Data: "challenge-token-here",
+	}
+
+	// Convert to ResourceRecord
+	rr := libdnsRecordToResourceRecord(txtRR, zone)
+
+	// Verify the conversion - should extract just the subdomain part
+	if rr.Type != "TXT" {
+		t.Errorf("Expected type TXT, got %s", rr.Type)
+	}
+	if rr.Name != "_acme-challenge.schuld" {
+		t.Errorf("Expected name _acme-challenge.schuld, got %s", rr.Name)
+	}
+	if rr.Value != "challenge-token-here" {
+		t.Errorf("Expected value 'challenge-token-here', got %s", rr.Value)
+	}
+	if rr.TTL != 60 {
+		t.Errorf("Expected TTL 60, got %d", rr.TTL)
+	}
+
+	// Test another subdomain
+	txtRR2 := libdns.RR{
+		Name: "_acme-challenge.config.example.com",
+		TTL:  60 * time.Second,
+		Type: "TXT",
+		Data: "another-challenge-token",
+	}
+
+	rr = libdnsRecordToResourceRecord(txtRR2, zone)
+
+	// Verify the conversion
+	if rr.Name != "_acme-challenge.config" {
+		t.Errorf("Expected name _acme-challenge.config, got %s", rr.Name)
+	}
+	if rr.Value != "another-challenge-token" {
+		t.Errorf("Expected value 'another-challenge-token', got %s", rr.Value)
+	}
+}
+
 func TestProvider_Validation(t *testing.T) {
 	provider := &Provider{
 		Username: "test",
