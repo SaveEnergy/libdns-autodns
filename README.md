@@ -172,7 +172,7 @@ The provider supports the following DNS record types:
 - **TXT** - Text records (`libdns.TXT`)
 - **CAA** - Certification Authority Authorization records (`libdns.CAA`)
 - **SVCB/HTTPS** - Service Binding records (`libdns.ServiceBinding`)
-- **Generic records** - Support for `libdns.RR` records (used by DNS-01 challenges)
+- **Generic records** - Support for `libdns.RR` records (TXT, A, and other supported types, e.g. DNS-01 challenges)
 
 ## API Endpoints
 
@@ -269,12 +269,18 @@ go test -v
 - ✅ Default values - Tests provider configuration
 - ✅ Input validation - Tests for required field validation
 - ✅ ServiceBinding support - Tests for SVCB/HTTPS record conversion
+- ✅ RR record support - Tests for TXT and A via `libdns.RR`
 
 **Note:** Tests require a registered AutoDNS account and a domain you control. The tests will create and delete actual DNS records.
 
 ## Recent Improvements
 
-### v1.0.6 (Current)
+### v1.0.7 (Current)
+- ✅ **RR record handling** - Improved support for `libdns.RR` records: TXT, A, and other supported types are now properly converted, especially for DNS-01 challenges (Caddy/ACME).
+- ✅ **No more 'unknown' records** - The provider no longer creates 'unknown' records for supported types; TXT challenges now work as expected.
+- ✅ **Test coverage** - Added tests for RR record support (TXT and A).
+
+### v1.0.6
 - ✅ **Enhanced validation** - Added comprehensive input validation for required fields (username, password, zone name, records)
 - ✅ **ServiceBinding support** - Added full support for SVCB/HTTPS records (`libdns.ServiceBinding`)
 - ✅ **Better error messages** - Improved validation error messages for better debugging
@@ -307,6 +313,11 @@ For issues and questions:
 3. Open an issue on this repository
 
 ## Changelog
+
+### v1.0.7
+- Improved: Properly handle `libdns.RR` records for TXT, A, and other supported types (especially for DNS-01 challenges and Caddy/ACME).
+- Fixed: No more 'unknown' records for supported types; TXT challenges now work as expected.
+- Added: Unit tests for RR record support (TXT and A).
 
 ### v1.0.6
 - Added: Comprehensive input validation for required fields (username, password, zone name, records) with clear error messages.

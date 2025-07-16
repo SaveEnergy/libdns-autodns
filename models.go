@@ -290,11 +290,49 @@ func libdnsRecordToResourceRecord(record libdns.Record, zone string) ResourceRec
 		}
 	case libdns.RR:
 		// Handle generic RR records (like DNS-01 challenges)
-		rr = ResourceRecord{
-			Name:  libdns.AbsoluteName(r.Name, zone),
-			TTL:   int64(r.TTL / time.Second),
-			Type:  r.Type,
-			Value: r.Data,
+		// Check if it's a supported record type and handle accordingly
+		switch r.Type {
+		case "TXT":
+			rr = ResourceRecord{
+				Name:  libdns.AbsoluteName(r.Name, zone),
+				TTL:   int64(r.TTL / time.Second),
+				Type:  "TXT",
+				Value: r.Data,
+			}
+		case "A", "AAAA":
+			// Try to parse as IP address
+			if addr, err := netip.ParseAddr(r.Data); err == nil {
+				rr = ResourceRecord{
+					Name:  libdns.AbsoluteName(r.Name, zone),
+					TTL:   int64(r.TTL / time.Second),
+					Type:  r.Type,
+					Value: addr.String(),
+				}
+			} else {
+				// Fall back to generic handling
+				rr = ResourceRecord{
+					Name:  libdns.AbsoluteName(r.Name, zone),
+					TTL:   int64(r.TTL / time.Second),
+					Type:  r.Type,
+					Value: r.Data,
+				}
+			}
+		case "CNAME", "MX", "NS", "SRV", "CAA":
+			rr = ResourceRecord{
+				Name:  libdns.AbsoluteName(r.Name, zone),
+				TTL:   int64(r.TTL / time.Second),
+				Type:  r.Type,
+				Value: r.Data,
+			}
+		default:
+			// For truly unknown record types, log a warning but still create the record
+			fmt.Printf("Warning: Unknown record type %s in libdns.RR - creating generic record\n", r.Type)
+			rr = ResourceRecord{
+				Name:  libdns.AbsoluteName(r.Name, zone),
+				TTL:   int64(r.TTL / time.Second),
+				Type:  r.Type,
+				Value: r.Data,
+			}
 		}
 	default:
 		// For unknown record types, provide better debugging information

@@ -317,6 +317,57 @@ func TestServiceBindingSupport(t *testing.T) {
 	}
 }
 
+func TestRRRecordSupport(t *testing.T) {
+	// Test libdns.RR record handling (like DNS-01 challenges)
+	zone := "example.com"
+
+	// Test TXT record (like DNS-01 challenge)
+	txtRR := libdns.RR{
+		Name: "_acme-challenge",
+		TTL:  60 * time.Second,
+		Type: "TXT",
+		Data: "challenge-token-here",
+	}
+
+	// Convert to ResourceRecord
+	rr := libdnsRecordToResourceRecord(txtRR, zone)
+
+	// Verify the conversion
+	if rr.Type != "TXT" {
+		t.Errorf("Expected type TXT, got %s", rr.Type)
+	}
+	if rr.Name != "_acme-challenge.example.com" {
+		t.Errorf("Expected name _acme-challenge.example.com, got %s", rr.Name)
+	}
+	if rr.Value != "challenge-token-here" {
+		t.Errorf("Expected value 'challenge-token-here', got %s", rr.Value)
+	}
+	if rr.TTL != 60 {
+		t.Errorf("Expected TTL 60, got %d", rr.TTL)
+	}
+
+	// Test A record
+	aRR := libdns.RR{
+		Name: "www",
+		TTL:  300 * time.Second,
+		Type: "A",
+		Data: "192.168.1.1",
+	}
+
+	rr = libdnsRecordToResourceRecord(aRR, zone)
+
+	// Verify the conversion
+	if rr.Type != "A" {
+		t.Errorf("Expected type A, got %s", rr.Type)
+	}
+	if rr.Name != "www.example.com" {
+		t.Errorf("Expected name www.example.com, got %s", rr.Name)
+	}
+	if rr.Value != "192.168.1.1" {
+		t.Errorf("Expected value '192.168.1.1', got %s", rr.Value)
+	}
+}
+
 func TestProvider_Validation(t *testing.T) {
 	provider := &Provider{
 		Username: "test",
